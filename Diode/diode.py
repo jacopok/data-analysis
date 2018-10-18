@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Spyder Editor
-
-This is a temporary script file.
-"""
-
 import numpy as np
 import scipy
 from scipy import optimize
@@ -12,9 +6,9 @@ import matplotlib.pyplot as plt
 
 
 #Initialization of data arrays
-current_array = [1, 10, 100, 1000, 10**4, 10**5, 10**6]
-voltage_array = [1, 2, 3, 4, 5, 6, 7]
-current_errors_array = np.ones(len(voltage_array))
+current_array = [1, 10, 100, 1040, 11**4, 10**5]
+voltage_array = [1, 2, 3, 4, 5, 6]
+current_errors_array = 1 * np.ones(len(voltage_array))
 
 max_voltage = np.max(voltage_array)
 min_voltage = np.min(voltage_array)
@@ -38,7 +32,9 @@ def current_theory(voltage, a, b):
     current = a * np.exp(b * voltage)
     return(current)
     
-popt, pcov = scipy.optimize.curve_fit(current_theory, voltage_array, current_array, sigma=current_errors_array)
+#Optimization of the theoretical function
+#Gives the parameter values and their variance
+popt, pcov = scipy.optimize.curve_fit(current_theory, voltage_array, current_array, sigma=current_errors_array, absolute_sigma=True)
 a = popt[0]
 b = popt[1]
 error_a = pcov[0, 0]
