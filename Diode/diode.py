@@ -71,7 +71,7 @@ b = popt[1]
 error_a = pcov[0, 0]
 error_b = pcov[1, 1]
 
-popt_zener, pcov_zener = scipy.optimize.curve_fit(current_zener_theory, voltage_zener_array, current_zener_array, sigma=current_zener_errors_array, absolute_sigma=True)
+popt_zener, pcov_zener = scipy.optimize.curve_fit(current_zener_theory, voltage_zener_array, current_zener_array, sigma=error_current_zener_array, absolute_sigma=True)
 a_z = popt_zener[0]
 b_z = popt_zener[1]
 error_a_z = pcov_zener[0, 0]
@@ -100,3 +100,4 @@ plt.show()
 
 r_z = 1/b_z # in kilo ohms
 v_z = - a_z / b_z # in volts
+error_r_z = error_b_z / (b_z**2)
