@@ -3,16 +3,18 @@ import scipy
 from scipy import optimize
 import scipy.stats as sps
 import matplotlib.pyplot as plt
+from uncertainties import *
+from uncertainties.umath import *
 
 class dataset:
     def __init__(self, x_array, y_array, x_type, y_type):
-        self.x_array = x_array
-        self.y_array = y_array
+        self.x_array = np.array(x_array)
+        self.y_array = np.array(y_array)
         self.x_type = x_type
         self.y_type = y_type
-        self.x_error_array = []
-        self.y_error_array = []
-        self.y_prediction = []
+        self.x_error_array = np.array([])
+        self.y_error_array = np.array([])
+        self.y_prediction = np.array([])
     
     def calculate_error(self, scale_array, axis, multimeter_type):
         if (axis=='x'):
@@ -81,7 +83,7 @@ class dataset:
         
     def goodness_of_fit(self):
         self.calculate_y_prediction()
-        chisq, pvalue = sps.chisquare(self.y_array, self.y_prediction)
+        chisq, pvalue = sps.chisquare(self.y_array / self.y_error_array, self.y_prediction / self.y_error_array)
         return([chisq, pvalue])
         
     def full_plot(self):
@@ -120,16 +122,21 @@ class dataset:
         plt.errorbar(self.x_array, residuals, self.y_error_array, fmt = 'bo')
         plt.show()
     
-def multimeter_error(value, scale, multimeter_type, measure_type):
+def multimeter_error(value, scale, multimeter_type, measure_type, ignore_gain = False):
     """
     value is the value measured by the multimeter
-    scale is the "end of scale" given by the multimeter
-    multimeter_type is 'a' for agilent or 'm' for metrix
+    scale is the "end of scale" given by the multimeter, 
+        or the v/div on the oscilloscope
+    multimeter_type is:
+        'a' for agilent
+        'm' for metrix
+        'o' for oscilloscope
     measure_type is:
         'a' for current
         'v' for tension
         'ohm' for resistance
         'c' for capacity
+        's' for time
      
     Returns the error of the measure.
     """
@@ -176,6 +183,20 @@ def multimeter_error(value, scale, multimeter_type, measure_type):
         else:
             print(f'{measure_type} is not a valid measure type')
             return(None)
+    elif(multimeter_type == 'o'):
+        if(measure_type == 'v'):
+            scale_array = float(10)**(np.arange(-9, 2))
+            resolution_array = scale_array/10
+            percent_accuracy = 0.01 * np.ones(len(scale_array))
+            digit_accuracy = np.ones(len(scale_array))
+        elif(measure_type == 's'):
+            scale_array = float(10)**(np.arange(-9, 2))
+            resolution_array = scale_array/10
+            percent_accuracy = 3 * np.ones(len(scale_array))
+            digit_accuracy = np.ones(len(scale_array))
+        else:
+            print(f'{measure_type} is not a valid measure type')
+            return(None)
     else:
         print(f'{multimeter_type} is not a valid multimeter type')
         return(None)
@@ -194,13 +215,30 @@ def multimeter_error(value, scale, multimeter_type, measure_type):
         print(f'{scale} is an invalid scale')
         return(None)
     
-    print(index)
-    error = (percent_accuracy[index] * value / 100 
-             + digit_accuracy[index] * resolution_array[index])
+    distribution_factor = 1/np.sqrt(3)
+    
+    if(ignore_gain==False):
+        error = np.sqrt((percent_accuracy[index] * value / 100 )**2
+             + (digit_accuracy[index] * resolution_array[index])**2 ) * distribution_factor
+    else:
+        error = digit_accuracy[index] * resolution_array[index] * distribution_factor
     
     return(error)
+
+def multimeter_error_array(value, scale, multimeter_type, measure_type, ignore_gain = False):
+    """
+    Applies multimeter_error to arrays.
+    Returns numpy array of ufloats
+    """
+    if(not(len(value) == len(scale))):
+        print("Value and scale arrays must be of the same size")
+        return(None)
     
-def test_initialization():
-    global test
-    test = dataset([1, 2, 3], [1, 1.6, 2], 'v', 'a')
-    test.y_error_array = [0.1, 0.05, 0.2]
+    errors_array = np.zeros(len(value), dtype = object)
+    
+    for i in range(len(value)):
+        error = multimeter_error(value[i], scale[i], multimeter_type, measure_type, ignore_gain)
+        entry = np.array(ufloat(value[i], error))
+        errors_array[i] = entry
+        
+    return(errors_array)
