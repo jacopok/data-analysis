@@ -7,10 +7,13 @@ from uncertainties import *
 from uncertainties.umath import *
 from uncertainties import unumpy
 
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
+
+
 class dataset:
     def __init__(self, x_array, y_array, x_type, y_type):
         self.x_array = np.array(x_array)
-        self.original_n = len(self.x_array)
         self.y_array = np.array(y_array)
         self.x_type = x_type
         self.y_type = y_type
@@ -18,7 +21,13 @@ class dataset:
         self.y_error_array = np.array([])
         self.y_prediction = np.array([])
         self.crop = 0
-    
+        self.symmetric_crop = False
+        self.cropped = False
+        self.x_extra_points = np.array([])
+        self.y_extra_points = np.array([])
+        self.y_extra_errors = np.array([])
+        self.x_extra_errors = np.array([])
+
     def calculate_error(self, scale_array, axis, multimeter_type):
         if (axis=='x'):
             array = self.x_array
@@ -50,11 +59,27 @@ class dataset:
         return(0)
         
     def crop_dataset(self):
-        self.n = self.original_n - self.crop
-        self.x_array = self.x_array[:self.n]
-        self.y_array = self.y_array[:self.n]
-        self.x_error_array = self.x_error_array[:self.n]
-        self.y_error_array = self.y_error_array[:self.n]
+        if(self.cropped == False):
+            n = len(self.x_array) - self.crop
+            if(self.symmetric_crop == True):
+                self.x_extra_points = np.concatenate((self.x_array[:self.crop],
+                                                      self.x_array[-self.crop:]))
+                self.y_extra_points = np.concatenate((self.y_array[:self.crop],
+                                                      self.y_array[-self.crop:]))
+                self.y_extra_errors = np.concatenate((self.y_error_array[:self.crop],
+                                                      self.y_error_array[-self.crop:]))
+                self.x_extra_errors = np.concatenate((self.x_error_array[:self.crop],
+                                                      self.x_error_array[-self.crop:]))
+                self.x_array = self.x_array[self.crop:n]
+                self.y_array = self.y_array[self.crop:n]
+                self.x_error_array = self.x_error_array[self.crop:n]
+                self.y_error_array = self.y_error_array[self.crop:n]
+            else:
+                self.x_array = self.x_array[:n]
+                self.y_array = self.y_array[:n]
+                self.x_error_array = self.x_error_array[:n]
+                self.y_error_array = self.y_error_array[:n]
+            self.cropped = True
         
     def model(self, x, a, b):
         y = x * a + b
@@ -82,21 +107,37 @@ class dataset:
         self.calculate_y_prediction()
         residuals = self.y_array - self.y_prediction
         return(residuals)
+        
+    def calculate_extra_residuals(self):
+        params, error_params = self.fit()
+        extra_predictions = np.zeros(len(self.x_extra_points))
+        for i, x in enumerate(self.x_extra_points):
+            extra_predictions[i] = self.model(x, *params)
+        extra_residuals = self.y_extra_points - extra_predictions
+        return(extra_residuals)
     
     def calculate_y_prediction(self):
         params, error_params = self.fit()
         y_model = []
-        for x in self.x_array[:self.n]:
+        self.crop_dataset()
+        for x in self.x_array:
             y_model.append(self.model(x, *params))
         self.y_prediction = np.array(y_model)
 
         
     def goodness_of_fit(self):
         self.calculate_y_prediction()
-        chisq, pvalue = sps.chisquare(self.y_array / self.y_error_array, self.y_prediction / self.y_error_array)
-        return([chisq, pvalue])
+        df = len(self.y_array) - 2
+        chi2 = sps.chi2(df=df)
+        square_deviation = ((self.y_array - self.y_prediction)/self.y_error_array)**2
+        sum_square_deviation = np.sum(square_deviation, axis=0)
+        print(square_deviation)
+        pvalue = chi2.sf(x=sum_square_deviation)
+        print(pvalue)
+        return(pvalue)
         
-    def full_plot(self):
+        
+    def full_plot(self, xlabel='', ylabel='', figname=''):
         """Plots the data with the corresponding errors, along with the model
         
         """
@@ -120,19 +161,27 @@ class dataset:
         
         plt.plot(x_range, y_range, '--')
         plt.errorbar(x=self.x_array, y=self.y_array, yerr=self.y_error_array, fmt = 'bo')
-        
-        plt.show()
+        plt.errorbar(x=self.x_extra_points, y=self.y_extra_points, yerr=self.y_extra_errors, fmt = 'bo', color='r')
+        plt.xlabel(xlabel, fontsize = 12)
+        plt.ylabel(ylabel, fontsize = 12)
+        plt.tight_layout()
+        plt.savefig('figures/' + figname, dpi = 600)
     
-    def residuals_plot(self):
+    def residuals_plot(self, xlabel='', ylabel='', figname=''):
         self.crop_dataset()
         residuals = self.calculate_residuals()
+        extra_residuals = self.calculate_extra_residuals()
         if(len(self.y_error_array) != len(residuals)):
             print('Must calculate errors first')
             return(0)
         
         plt.plot(self.x_array, np.zeros(len(residuals)), '--')
         plt.errorbar(self.x_array, residuals, self.y_error_array, fmt = 'bo')
-        plt.show()
+        plt.errorbar(x=self.x_extra_points, y=extra_residuals, yerr=self.y_extra_errors, fmt = 'bo', mfc = 'grey', mec = 'grey', ecolor = 'grey')
+        plt.xlabel(xlabel, fontsize = 12)
+        plt.ylabel(ylabel, fontsize = 12)
+        plt.tight_layout()
+        plt.savefig('figures/' + figname, dpi = 600)
     
 def multimeter_error(value, scale, multimeter_type, measure_type, ignore_gain = False):
     """
