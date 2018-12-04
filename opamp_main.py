@@ -25,8 +25,25 @@ print(m_experiment_1)
 print('1: valore sperimentale dell intercetta')
 print(q_experiment_1)
 
-print('1: valori di m per i dati + e -')
+print('1: valori di m per i dati +')
+print('coefficiente angolare')
+params_plus_1, error_params_plus_1 = transfer_plus_1.fit()
+m_experiment_plus_1 = ufloat(params_plus_1[0], error_params_plus_1[0])
+q_experiment_plus_1 = ufloat(params_plus_1[1], error_params_plus_1[1])
+print(m_experiment_plus_1)
 
+print('intercetta')
+print(q_experiment_plus_1)
+
+print('1: valori di m per i dati -')
+print('coefficiente angolare')
+params_minus_1, error_params_minus_1 = transfer_minus_1.fit()
+m_experiment_minus_1 = ufloat(params_minus_1[0], error_params_minus_1[0])
+q_experiment_minus_1 = ufloat(params_minus_1[1], error_params_minus_1[1])
+print(m_experiment_minus_1)
+
+print('intercetta')
+print(q_experiment_minus_1)
 
 print('\n(')
 # 2: AMPLIFICATORE DELLE DIFFERENZE – AMPLIFICATORE NON INVERTENTE

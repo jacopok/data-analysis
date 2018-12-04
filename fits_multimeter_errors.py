@@ -20,13 +20,8 @@ class dataset:
         self.x_error_array = np.array([])
         self.y_error_array = np.array([])
         self.y_prediction = np.array([])
-        self.crop = 0
-        self.symmetric_crop = False
-        self.cropped = False
-        self.x_extra_points = np.array([])
-        self.y_extra_points = np.array([])
-        self.y_extra_errors = np.array([])
-        self.x_extra_errors = np.array([])
+        self.point_ignore = np.zeros(len(self.x_array)) #zero for points to keep, 
+        #one for points to ignore
 
     def calculate_error(self, scale_array, axis, multimeter_type):
         if (axis=='x'):
@@ -58,29 +53,6 @@ class dataset:
         
         return(0)
         
-    def crop_dataset(self):
-        if(self.cropped == False):
-            n = len(self.x_array) - self.crop
-            if(self.symmetric_crop == True):
-                self.x_extra_points = np.concatenate((self.x_array[:self.crop],
-                                                      self.x_array[-self.crop:]))
-                self.y_extra_points = np.concatenate((self.y_array[:self.crop],
-                                                      self.y_array[-self.crop:]))
-                self.y_extra_errors = np.concatenate((self.y_error_array[:self.crop],
-                                                      self.y_error_array[-self.crop:]))
-                self.x_extra_errors = np.concatenate((self.x_error_array[:self.crop],
-                                                      self.x_error_array[-self.crop:]))
-                self.x_array = self.x_array[self.crop:n]
-                self.y_array = self.y_array[self.crop:n]
-                self.x_error_array = self.x_error_array[self.crop:n]
-                self.y_error_array = self.y_error_array[self.crop:n]
-            else:
-                self.x_array = self.x_array[:n]
-                self.y_array = self.y_array[:n]
-                self.x_error_array = self.x_error_array[:n]
-                self.y_error_array = self.y_error_array[:n]
-            self.cropped = True
-        
     def model(self, x, a, b):
         y = x * a + b
         return(y)
@@ -91,10 +63,13 @@ class dataset:
         
         returns params, error_params
         """
-        self.crop_dataset()
+        x_array = self.x_array[self.point_ignore==0]
+        y_array = self.y_array[self.point_ignore==0]
+        y_error_array = self.y_error_array[self.point_ignore==0]
         
-        params, pcov = scipy.optimize.curve_fit(self.model, self.x_array, self.y_array,
-                                      sigma=self.y_error_array, p0=initial_params, absolute_sigma=True)
+        
+        params, pcov = scipy.optimize.curve_fit(self.model, x_array, y_array,
+                                      sigma=y_error_array, p0=initial_params, absolute_sigma=True)
         
         error_params = []
         for i in range(np.shape(pcov)[0]):
@@ -107,19 +82,10 @@ class dataset:
         self.calculate_y_prediction()
         residuals = self.y_array - self.y_prediction
         return(residuals)
-        
-    def calculate_extra_residuals(self):
-        params, error_params = self.fit()
-        extra_predictions = np.zeros(len(self.x_extra_points))
-        for i, x in enumerate(self.x_extra_points):
-            extra_predictions[i] = self.model(x, *params)
-        extra_residuals = self.y_extra_points - extra_predictions
-        return(extra_residuals)
     
     def calculate_y_prediction(self):
         params, error_params = self.fit()
         y_model = []
-        self.crop_dataset()
         for x in self.x_array:
             y_model.append(self.model(x, *params))
         self.y_prediction = np.array(y_model)
@@ -141,7 +107,6 @@ class dataset:
         """Plots the data with the corresponding errors, along with the model
         
         """
-        self.crop_dataset()
         
         if(len(self.y_error_array) != len(self.y_array)):
             print('Must calculate errors first')
@@ -156,28 +121,42 @@ class dataset:
         x_excess = n_steps * percent_plot_excess * x_step
         x_range = np.arange(x_min-x_excess, x_max+x_excess, x_step)
         
+        x_array = self.x_array[self.point_ignore==0]
+        y_array = self.y_array[self.point_ignore==0]
+        y_error_array = self.y_error_array[self.point_ignore==0]
+        
+        x_extra_array = self.x_array[self.point_ignore==1]
+        y_extra_array = self.y_array[self.point_ignore==1]
+        y_extra_error_array = self.y_error_array[self.point_ignore==1]
+        
         params, error_params = self.fit()
         y_range = self.model(x_range, params[0], params[1])
         
         plt.plot(x_range, y_range, '--')
-        plt.errorbar(x=self.x_array, y=self.y_array, yerr=self.y_error_array, fmt = 'bo')
-        plt.errorbar(x=self.x_extra_points, y=self.y_extra_points, yerr=self.y_extra_errors, fmt = 'bo', color='r')
+        plt.errorbar(x=x_array, y=y_array, yerr=y_error_array, fmt = 'bo')
+        plt.errorbar(x=x_extra_array, y=y_extra_array, yerr=y_extra_error_array, fmt = 'bo', mfc = 'grey', mec = 'grey', ecolor = 'grey')
         plt.xlabel(xlabel, fontsize = 12)
         plt.ylabel(ylabel, fontsize = 12)
         plt.tight_layout()
         plt.savefig('figures/' + figname, dpi = 600)
     
     def residuals_plot(self, xlabel='', ylabel='', figname=''):
-        self.crop_dataset()
-        residuals = self.calculate_residuals()
-        extra_residuals = self.calculate_extra_residuals()
-        if(len(self.y_error_array) != len(residuals)):
+        all_residuals = self.calculate_residuals()
+        if(len(self.y_error_array) != len(all_residuals)):
             print('Must calculate errors first')
             return(0)
         
-        plt.plot(self.x_array, np.zeros(len(residuals)), '--')
-        plt.errorbar(self.x_array, residuals, self.y_error_array, fmt = 'bo')
-        plt.errorbar(x=self.x_extra_points, y=extra_residuals, yerr=self.y_extra_errors, fmt = 'bo', mfc = 'grey', mec = 'grey', ecolor = 'grey')
+        x_array = self.x_array[self.point_ignore==0]
+        y_error_array = self.y_error_array[self.point_ignore==0]
+        residuals = all_residuals[self.point_ignore==0]
+        
+        x_extra_array = self.x_array[self.point_ignore==1]
+        y_extra_error_array = self.y_error_array[self.point_ignore==1]
+        extra_residuals = all_residuals[self.point_ignore==1]
+        
+        plt.plot(self.x_array, np.zeros(len(all_residuals)), '--')
+        plt.errorbar(x_array, residuals, y_error_array, fmt = 'bo')
+        plt.errorbar(x=x_extra_array, y=extra_residuals, yerr=y_extra_error_array, fmt = 'bo', mfc = 'grey', mec = 'grey', ecolor = 'grey')
         plt.xlabel(xlabel, fontsize = 12)
         plt.ylabel(ylabel, fontsize = 12)
         plt.tight_layout()

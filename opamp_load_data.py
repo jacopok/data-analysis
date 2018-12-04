@@ -53,8 +53,9 @@ transfer_minus_1.calculate_error(Vout_minus_vdiv_1, 'y', 'o')
 transfer_1.calculate_error(Vin_vdiv_1, 'x', 'o')
 transfer_1.calculate_error(Vout_vdiv_1, 'y', 'o')
 
-transfer_1.crop = 2
-transfer_1.symmetric_crop = True
+transfer_plus_1.point_ignore = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1])
+transfer_minus_1.point_ignore = np.flip(transfer_plus_1.point_ignore)
+transfer_1.point_ignore = np.concatenate((transfer_minus_1.point_ignore,  transfer_plus_1.point_ignore), axis=0)
 
 # 2: AMPLIFICATORE DELLE DIFFERENZE – AMPLIFICATORE NON INVERTENTE
 
