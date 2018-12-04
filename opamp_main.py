@@ -25,7 +25,10 @@ print(m_experiment_1)
 print('1: valore sperimentale dell intercetta')
 print(q_experiment_1)
 
-print('\n')
+print('1: valori di m per i dati + e -')
+
+
+print('\n(')
 # 2: AMPLIFICATORE DELLE DIFFERENZE – AMPLIFICATORE NON INVERTENTE
 
 #Non-invertent: 2.1a
@@ -97,7 +100,7 @@ m_theory_23 = C_23[1] / C_23[0]
 
 params_23, errorparams_23 = transfer_23.fit()
 m_experiment_23 = ufloat(params_23[0], errorparams_23[0])
-compatibility_23 = ufloat_compatibility(m_theory_23, m_experim_23)
+compatibility_23 = ufloat_compatibility(m_theory_23, m_experiment_23)
 
 print('2.3: valore teorico coefficiente angolare')
 print(m_theory_23)

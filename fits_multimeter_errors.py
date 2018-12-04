@@ -183,7 +183,7 @@ class dataset:
         plt.tight_layout()
         plt.savefig('figures/' + figname, dpi = 600)
     
-def multimeter_error(value, scale, multimeter_type, measure_type, ignore_gain = False):
+def multimeter_error(value, scale, multimeter_type, measure_type, ignore_gain = False, ignore_digit = False):
     """
     value is the value measured by the multimeter
     scale is the "end of scale" given by the multimeter, 
@@ -279,15 +279,20 @@ def multimeter_error(value, scale, multimeter_type, measure_type, ignore_gain = 
     
     distribution_factor = 1/np.sqrt(3)
     
-    if(ignore_gain==False):
+    if(ignore_gain==False and ignore_digit==False):
         error = np.sqrt((percent_accuracy[index] * value / 100 )**2
              + (digit_accuracy[index] * resolution_array[index])**2 ) * distribution_factor
-    else:
+    elif(ignore_gain==True and ignore_digit==False):
         error = digit_accuracy[index] * resolution_array[index] * distribution_factor
+    elif(ignore_gain==False and ignore_digit==True):
+        error = percent_accuracy[index] * value / 100 * distribution_factor
+    else:
+        print('Cannot ignore both errors')
+        return(None)
     
     return(error)
 
-def multimeter_error_array(value, scale, multimeter_type, measure_type, ignore_gain = False):
+def multimeter_error_array(value, scale, multimeter_type, measure_type, ignore_gain = False, ignore_digit = False):
     """
     Applies multimeter_error to arrays.
     Returns numpy array of ufloats
