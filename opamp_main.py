@@ -49,8 +49,11 @@ print(q_experiment_minus_1)
 
 print('\n')
 
-transfer_1.full_plot('$V_{in}$', '$V_{out}$', '1_plot_completo.png')
-transfer_1.residuals_plot('$V_{in}$', '$V_{out}$', '1_plot_residui.png', plot_ignored=False)
+transfer_1.full_plot('$V_{in}$ [Volt]', '$V_{out}$ [Volt]', '1_plot_completo.png')
+transfer_1.residuals_plot('$V_{in}$ [Volt]', '$V_{out}$ [Volt]', '1_plot_residui.png', plot_ignored=False)
+
+transfer_plus_1.residuals_plot('$V_{in}$ [Volt]', '$V_{out}$ [Volt]', '1_plot_residui_plus.png')
+transfer_minus_1.residuals_plot('$V_{in}$ [Volt]', '$V_{out}$ [Volt]', '1_plot_residui_minus.png')
 
 # 2: AMPLIFICATORE DELLE DIFFERENZE – AMPLIFICATORE NON INVERTENTE
 
@@ -133,6 +136,9 @@ print(m_experiment_23)
 
 print('2.3: compatibilità')
 print(compatibility_23)
+
+transfer_23.residuals_plot('$V_{in}$ [Volt]', '$V_{out}$ [Volt]', '23_plot_residui.png')
+transfer_23.full_plot('$V_{in}$ [Volt]', '$V_{out}$ [Volt]', '23_plot_completo.png')
 
 # RADDRIZZATORE DI PRECISIONE CON OPERAZIONALI: 3
 

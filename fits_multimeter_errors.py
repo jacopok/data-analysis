@@ -93,21 +93,24 @@ class dataset:
         
     def goodness_of_fit(self):
         self.calculate_y_prediction()
+        y_array = self.y_array[self.point_ignore==0]
+        y_prediction = self.y_prediction[self.point_ignore==0]
+        y_error_array = self.y_error_array[self.point_ignore==0]
         df = len(self.y_array) - 2
         chi2 = sps.chi2(df=df)
-        square_deviation = ((self.y_array - self.y_prediction)/self.y_error_array)**2
+        square_deviation = ((y_array - y_prediction)/y_error_array)**2
         sum_square_deviation = np.sum(square_deviation, axis=0)
-        print(square_deviation)
         pvalue = chi2.sf(x=sum_square_deviation)
-        print(pvalue)
-        return(pvalue)
+        sigma = chi2.std()
+        mean = chi2.mean()
+        return(pvalue, sum_square_deviation, (sum_square_deviation-mean)/sigma, square_deviation)
         
         
     def full_plot(self, xlabel='', ylabel='', figname='', plot_ignored=True):
         """Plots the data with the corresponding errors, along with the model
         
         """
-        
+
         if(len(self.y_error_array) != len(self.y_array)):
             print('Must calculate errors first')
             return(None)
@@ -118,7 +121,7 @@ class dataset:
 
         #Create gradual x values for plotting
         n_steps = 1000
-        percent_plot_excess = 0.1
+        percent_plot_excess = 0.05
         if(plot_ignored==True):
             x_min = np.min(self.x_array)
             x_max = np.max(self.x_array)
@@ -160,7 +163,10 @@ class dataset:
         y_extra_error_array = self.y_error_array[self.point_ignore==1]
         extra_residuals = all_residuals[self.point_ignore==1]
         
-        plt.plot(self.x_array, np.zeros(len(all_residuals)), '--')
+        if(plot_ignored==True):
+            plt.plot(self.x_array, np.zeros(len(all_residuals)), '--')
+        else:
+            plt.plot(x_array, np.zeros(len(residuals)), '--')
         plt.errorbar(x_array, residuals, y_error_array, fmt = 'bo')
         if(plot_ignored==True):
             plt.errorbar(x=x_extra_array, y=extra_residuals, yerr=y_extra_error_array, fmt = 'bo', mfc = 'grey', mec = 'grey', ecolor = 'grey')
