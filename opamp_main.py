@@ -25,6 +25,8 @@ print(m_experiment_1)
 print('1: valore sperimentale dell intercetta')
 print(q_experiment_1)
 
+print('\n')
+
 print('1: valori di m per i dati +')
 print('coefficiente angolare')
 params_plus_1, error_params_plus_1 = transfer_plus_1.fit()
@@ -45,7 +47,11 @@ print(m_experiment_minus_1)
 print('intercetta')
 print(q_experiment_minus_1)
 
-print('\n(')
+print('\n')
+
+transfer_1.full_plot('$V_{in}$', '$V_{out}$', '1_plot_completo.png')
+transfer_1.residuals_plot('$V_{in}$', '$V_{out}$', '1_plot_residui.png', plot_ignored=False)
+
 # 2: AMPLIFICATORE DELLE DIFFERENZE – AMPLIFICATORE NON INVERTENTE
 
 #Non-invertent: 2.1a

@@ -103,7 +103,7 @@ class dataset:
         return(pvalue)
         
         
-    def full_plot(self, xlabel='', ylabel='', figname=''):
+    def full_plot(self, xlabel='', ylabel='', figname='', plot_ignored=True):
         """Plots the data with the corresponding errors, along with the model
         
         """
@@ -112,18 +112,22 @@ class dataset:
             print('Must calculate errors first')
             return(None)
         
-        #Create gradual x values for plotting
-        n_steps = 1000
-        percent_plot_excess = 0.1
-        x_min = np.min(self.x_array)
-        x_max = np.max(self.x_array)
-        x_step = (x_max - x_min) / n_steps
-        x_excess = n_steps * percent_plot_excess * x_step
-        x_range = np.arange(x_min-x_excess, x_max+x_excess, x_step)
-        
         x_array = self.x_array[self.point_ignore==0]
         y_array = self.y_array[self.point_ignore==0]
         y_error_array = self.y_error_array[self.point_ignore==0]
+
+        #Create gradual x values for plotting
+        n_steps = 1000
+        percent_plot_excess = 0.1
+        if(plot_ignored==True):
+            x_min = np.min(self.x_array)
+            x_max = np.max(self.x_array)
+        else:
+            x_min = np.min(x_array)
+            x_max = np.max(x_array)
+        x_step = (x_max - x_min) / n_steps
+        x_excess = n_steps * percent_plot_excess * x_step
+        x_range = np.arange(x_min-x_excess, x_max+x_excess, x_step)
         
         x_extra_array = self.x_array[self.point_ignore==1]
         y_extra_array = self.y_array[self.point_ignore==1]
@@ -134,13 +138,15 @@ class dataset:
         
         plt.plot(x_range, y_range, '--')
         plt.errorbar(x=x_array, y=y_array, yerr=y_error_array, fmt = 'bo')
-        plt.errorbar(x=x_extra_array, y=y_extra_array, yerr=y_extra_error_array, fmt = 'bo', mfc = 'grey', mec = 'grey', ecolor = 'grey')
+        if(plot_ignored==True):
+            plt.errorbar(x=x_extra_array, y=y_extra_array, yerr=y_extra_error_array, fmt = 'bo', mfc = 'grey', mec = 'grey', ecolor = 'grey')
         plt.xlabel(xlabel, fontsize = 12)
         plt.ylabel(ylabel, fontsize = 12)
         plt.tight_layout()
         plt.savefig('figures/' + figname, dpi = 600)
+        plt.close()
     
-    def residuals_plot(self, xlabel='', ylabel='', figname=''):
+    def residuals_plot(self, xlabel='', ylabel='', figname='', plot_ignored = True):
         all_residuals = self.calculate_residuals()
         if(len(self.y_error_array) != len(all_residuals)):
             print('Must calculate errors first')
@@ -156,11 +162,13 @@ class dataset:
         
         plt.plot(self.x_array, np.zeros(len(all_residuals)), '--')
         plt.errorbar(x_array, residuals, y_error_array, fmt = 'bo')
-        plt.errorbar(x=x_extra_array, y=extra_residuals, yerr=y_extra_error_array, fmt = 'bo', mfc = 'grey', mec = 'grey', ecolor = 'grey')
+        if(plot_ignored==True):
+            plt.errorbar(x=x_extra_array, y=extra_residuals, yerr=y_extra_error_array, fmt = 'bo', mfc = 'grey', mec = 'grey', ecolor = 'grey')
         plt.xlabel(xlabel, fontsize = 12)
         plt.ylabel(ylabel, fontsize = 12)
         plt.tight_layout()
         plt.savefig('figures/' + figname, dpi = 600)
+        plt.close()
     
 def multimeter_error(value, scale, multimeter_type, measure_type, ignore_gain = False, ignore_digit = False):
     """
