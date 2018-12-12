@@ -64,7 +64,7 @@ class dataset:
         returns params, error_params
         """
         x_array = self.x_array[self.point_ignore==0]
-        y_array = self.y_array[self.point_ignore==0]
+        y_array = self.y_array[self.point_ignore==0] 
         y_error_array = self.y_error_array[self.point_ignore==0]
         
         
@@ -126,6 +126,9 @@ class dataset:
             print('Must calculate errors first')
             return(None)
         
+        m, q = self.fit_uarray()
+        
+        
         x_array = self.x_array[self.point_ignore==0]
         y_array = self.y_array[self.point_ignore==0]
         y_error_array = self.y_error_array[self.point_ignore==0]
@@ -145,7 +148,7 @@ class dataset:
         
         x_extra_array = self.x_array[self.point_ignore==1]
         y_extra_array = self.y_array[self.point_ignore==1]
-        y_extra_error_array = self.y_error_array[self.point_ignore==1]
+        y_extra_error_array = self.y_error_array[self.point_ignore==1] + self.x_error_array[self.point_ignore==1] * np.abs(m.n)
         
         params, error_params = self.fit()
         y_range = self.model(x_range, params[0], params[1])
@@ -165,6 +168,8 @@ class dataset:
         if(len(self.y_error_array) != len(all_residuals)):
             print('Must calculate errors first')
             return(0)
+        
+        m, q = self.fit_uarray()
         
         x_array = self.x_array[self.point_ignore==0]
         y_error_array = self.y_error_array[self.point_ignore==0]

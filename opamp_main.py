@@ -68,7 +68,7 @@ print('\n')
 
 A_21 = Vout_21 / Vin_21
 
-A_teor_21 = (1 + R_1[1] / R_1[0])/(1 + R_21[0]/R_21[1]) * np.ones(len(A_21))
+A_teor_21 = (1 + R_1[1] / R_1[0]) / (1 + R_21[0]/R_21[1]) * np.ones(len(A_21))
 
 compatibility_21a = uarray_compatibility(A_21, A_teor_21)
 

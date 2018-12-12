@@ -20,6 +20,9 @@ characteristic_12 = dataset(V_ds_arr_12, I_d_arr_12, 'v', 'a')
 characteristic_12.calculate_error(I_d_scale_arr_12, 'y', 'm')
 characteristic_12.calculate_error(V_ds_scale_arr_12, 'x', 'a')
 
+characteristic_12.point_ignore = np.array([0, 0, 0, 0, 0, 0,
+                                     0, 0, 0, 0, 0])
+
 m_12, q_12 = characteristic_12.fit_uarray()
 
 r_0_12 = 1 / m_12
