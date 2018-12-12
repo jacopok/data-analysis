@@ -76,6 +76,12 @@ class dataset:
             error_params.append(pcov[i,i])
         
         return(params, error_params)
+        
+    def fit_uarray (self, initial_params=None):
+        params, error_params = self.fit(initial_params)
+        m = ufloat(params[0], error_params[0])
+        q = ufloat(params[1], error_params[1])
+        return m, q
     
     def calculate_residuals(self):
         params, error_params = self.fit()
@@ -92,18 +98,23 @@ class dataset:
 
         
     def goodness_of_fit(self):
+        """
+        Returns: p value, chi squared value, z-score of p value
+        
+        """
+        
         self.calculate_y_prediction()
         y_array = self.y_array[self.point_ignore==0]
         y_prediction = self.y_prediction[self.point_ignore==0]
         y_error_array = self.y_error_array[self.point_ignore==0]
-        df = len(self.y_array) - 2
+        df = len(y_array) - 2
         chi2 = sps.chi2(df=df)
-        square_deviation = ((y_array - y_prediction)/y_error_array)**2
+        square_deviation = ((y_array - y_prediction) / y_error_array)**2
         sum_square_deviation = np.sum(square_deviation, axis=0)
         pvalue = chi2.sf(x=sum_square_deviation)
         sigma = chi2.std()
         mean = chi2.mean()
-        return(pvalue, sum_square_deviation, (sum_square_deviation-mean)/sigma, square_deviation)
+        return(pvalue, sum_square_deviation, (sum_square_deviation-mean)/sigma)
         
         
     def full_plot(self, xlabel='', ylabel='', figname='', plot_ignored=True):
@@ -140,7 +151,7 @@ class dataset:
         y_range = self.model(x_range, params[0], params[1])
         
         plt.plot(x_range, y_range, '--')
-        plt.errorbar(x=x_array, y=y_array, yerr=y_error_array, fmt = 'bo')
+        plt.errorbar(x=x_array, y=y_array, yerr=y_error_array, fmt = 'bo', marker = '.')
         if(plot_ignored==True):
             plt.errorbar(x=x_extra_array, y=y_extra_array, yerr=y_extra_error_array, fmt = 'bo', mfc = 'grey', mec = 'grey', ecolor = 'grey')
         plt.xlabel(xlabel, fontsize = 12)
@@ -167,7 +178,7 @@ class dataset:
             plt.plot(self.x_array, np.zeros(len(all_residuals)), '--')
         else:
             plt.plot(x_array, np.zeros(len(residuals)), '--')
-        plt.errorbar(x_array, residuals, y_error_array, fmt = 'bo')
+        plt.errorbar(x_array, residuals, y_error_array, fmt = 'bo', marker = 'x')
         if(plot_ignored==True):
             plt.errorbar(x=x_extra_array, y=extra_residuals, yerr=y_extra_error_array, fmt = 'bo', mfc = 'grey', mec = 'grey', ecolor = 'grey')
         plt.xlabel(xlabel, fontsize = 12)
@@ -221,7 +232,7 @@ def multimeter_error(value, scale, multimeter_type, measure_type, ignore_gain = 
             digit_accuracy = 8 * np.array([1, 1, 1, 1])
         elif(measure_type == 'a'):
             scale_array = float(10)**(np.array([-3, -2, -1, 0, 1]))
-            resolution_array = float(10)**(np.array([-3, -2, -1, 0, 1] - 5))
+            resolution_array = float(10)**(np.array([-3, -2, -1, 0, 1]) - 5)
             percent_accuracy = np.array([0.1, 0.08, 0.08, 0.15, 0.5])
             digit_accuracy = np.array([15, 8, 8, 8, 15])
         elif(measure_type == 'ohm'):

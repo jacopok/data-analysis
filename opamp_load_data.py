@@ -57,6 +57,8 @@ transfer_plus_1.point_ignore = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1])
 transfer_minus_1.point_ignore = np.flip(transfer_plus_1.point_ignore)
 transfer_1.point_ignore = np.concatenate((transfer_minus_1.point_ignore,  transfer_plus_1.point_ignore), axis=0)
 
+V11_matrix = np.stack((Vin_1, Vin_vdiv_1, Vout_1, Vout_vdiv_1, transfer_1.point_ignore)).T
+
 # 2: AMPLIFICATORE DELLE DIFFERENZE – AMPLIFICATORE NON INVERTENTE
 
 R_arr_21 = np.array([5613.3, 32515, 46.64])
@@ -77,6 +79,8 @@ Vout_scale_arr_21 = np.array([.2, 1, 2])
 Vin_21 = multimeter_error_array(Vin_arr_21, Vin_scale_arr_21, 'o', 'v')
 Vout_21 = multimeter_error_array(Vout_arr_21, Vout_scale_arr_21, 'o', 'v')
 
+V21_matrix = np.stack((Vin_arr_21, Vin_scale_arr_21, Vout_arr_21, Vout_scale_arr_21)).T
+
 #Amp differences: 2.1b
 
 Vin1_arr_21 = np.array([-.284, .292, .292, -.284])
@@ -90,9 +94,16 @@ Vin1_21 = multimeter_error_array(Vin1_arr_21, Vin1_scale_arr_21, 'o', 'v')
 Vin2_21 = multimeter_error_array(Vin2_arr_21, Vin2_scale_arr_21, 'o', 'v')
 Voutb_21 = multimeter_error_array(Voutb_arr_21, Voutb_scale_arr_21, 'o', 'v')
 
+V21b_matrix = np.stack((Vin1_arr_21, 
+Vin1_scale_arr_21,
+Vin2_arr_21,
+Vin2_scale_arr_21,
+Voutb_arr_21,
+Voutb_scale_arr_21)).T
+
 #Amp sums invertent: 2.2
 
-Rf_22 = ufloat_single_value(5621.6, 100000, 'm', 'ohm')
+Rf_22 = ufloat_single_value(5621.6, 10000, 'm', 'ohm')
 #contains Rf
 #also, use R1 from 1 and R1b from 21
 
@@ -106,6 +117,13 @@ Vout1_scale_arr_22 = 0.5 * np.ones(4)
 Vin1_22 = multimeter_error_array(Vin1_arr_22, Vin1_scale_arr_22, 'o', 'v')
 Vin2_22 = multimeter_error_array(Vin2_arr_22, Vin2_scale_arr_22, 'o', 'v')
 Vout1_22 = multimeter_error_array(Vout1_arr_22, Vout1_scale_arr_22, 'o', 'v')
+
+V22_matrix = np.stack((Vin1_arr_22, 
+Vin1_scale_arr_22,
+Vin2_arr_22,
+Vin2_scale_arr_22,
+Vout1_arr_22,
+Vout1_scale_arr_22)).T
 
 #Integrator for impulses: 2.3
 
@@ -130,6 +148,13 @@ Vout_vdiv_23 = np.array([.2, .5, .5, .5, 1, 1, 2, 2])
 transfer_23 = dataset(Vin_23, Vout_23, 'v', 'v')
 transfer_23.calculate_error(Vin_vdiv_23, 'x', 'o')
 transfer_23.calculate_error(Vout_vdiv_23, 'y', 'o')
+
+V23_matrix = np.stack((
+      Vin_23,
+Vout_23,
+Vin_vdiv_23,
+Vout_vdiv_23  
+)).T
 
 # RADDRIZZATORE DI PRECISIONE CON OPERAZIONALI: 3
 
