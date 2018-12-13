@@ -3,8 +3,8 @@ from fits_multimeter_errors import *
 
 # RESISTENZE
 
-R_arr = [680, 9.850, 389.3, 3.23, 783, 6.65]
-R_scale_arr = [6000, 60, 600, 6, 6000, 60]
+R_arr = [680, 9.850, 389.3, 3.23, 783, 6.65, 58.4, 5.61]
+R_scale_arr = [6000, 60, 600, 6, 6000, 60, 600, 60]
 
 R_arr = 1000 * np.array(R_arr)
 R_scale_arr = 1000 * np.array(R_scale_arr)
@@ -16,6 +16,8 @@ R_scale_arr = 1000 * np.array(R_scale_arr)
 # S = 3
 # 2 = 4 (la vogliamo da: )
 # d nuova = 5
+# i = 6
+# load = 7
 
 R = multimeter_error_array(R_arr, R_scale_arr, 'a', 'ohm')
 

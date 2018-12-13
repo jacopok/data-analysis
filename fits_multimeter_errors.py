@@ -339,3 +339,5 @@ def uarray_compatibility(x, y):
         compatibility[i] = ufloat_compatibility(x[i], y[i])
     return(compatibility)
         
+def res_parallel(r1, r2):
+    return(r1 * r2 / (r1 + r2))

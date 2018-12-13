@@ -27,6 +27,10 @@ V_out_22 = ufloat_single_value(1.31, .2, 'o', 'v')
 
 V_ds_sat_22 = V_gs_22 - V_TN_13
 
-A_vt_mis = V_out_22 / V_in_22
+A_vt_exp_22 = V_out_22 / V_in_22
+
+g_m_22 = #RICALCOLARE
+
+A_vt_teor_22 = - g_m_22 * res_parallel(r_0_12, R[1])
 
 I_d_22 = ufloat_single_value(.00022287, .001, 'm', 'a')
