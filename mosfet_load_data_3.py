@@ -16,7 +16,7 @@ V_Rd_32 = ufloat_single_value(5.358, 6, 'a', 'v') # ai capi di Rd
 V_S_32 = ufloat_single_value(2.620, 6, 'a', 'v') # ai capi di Rs
 V_DS_32 = V_DD_32 - V_S_32 - V_Rd_32 # per chirciof
 
-Rp_32 = (R_VM * R[2])/(R_VM + R[2])
+Rp_32 = res_parallel(R_VM, R[2])
 
 V_Gvoltm_32 = ufloat_single_value(4.878, 6, 'a', 'v')
 
@@ -50,8 +50,8 @@ V_out_load_34 = ufloat_single_value(.728, .05, 'o', 'v')
 
 A_teor_34 = g_m_32 * res_parallel(R[5], r_0_12)
 
-R_in_34 = R[6] * V_out_34 / (V_in_34 * A_teor_34 - V_out_34)
-R_out_load_34 = R[7] * ((V_in_34 * A_teor_34 / V_out_load_34 ) - 1)
+R_in_34 = R[6] * V_out_34 / (V_in_34 * A_teor_34 - V_out_34 )
+R_out_load_34 = R[7] * ((V_in_34 * A_teor_34 / V_out_load_34 ) - 1 )
 
 # 3.5
 

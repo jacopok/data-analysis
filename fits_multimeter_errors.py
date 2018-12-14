@@ -341,3 +341,14 @@ def uarray_compatibility(x, y):
         
 def res_parallel(r1, r2):
     return(r1 * r2 / (r1 + r2))
+    
+def print_ufloat(x, units = '', error_decimals = 1):
+    order_error = int(log10(x.s)) - error_decimals
+    order_value = int(log10(x.n)) 
+    digit_error = round(x.s, -order_error) * 10**(-order_error)
+    value = round(x.n, -order_error) * 10**(-order_value)
+    string = '\\' + 'SI{%s(%s)e%s}{' % (value, int(digit_error), order_value)
+    string += units
+    string += '}'
+    print(string)
+    return()
