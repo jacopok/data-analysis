@@ -20,6 +20,7 @@ class dataset:
         self.y_type = y_type
         self.x_error_array = np.array([])
         self.y_error_array = np.array([])
+        self.error_array = np.array([])
         self.y_prediction = np.array([])
         self.point_ignore = np.zeros(len(self.x_array)) #zero for points to keep, 
         #one for points to ignore
@@ -72,8 +73,9 @@ class dataset:
         test_params, test_pcov = scipy.optimize.curve_fit(self.model, x_array, y_array,
                                       sigma=y_error_array, p0=initial_params, absolute_sigma=True)
         
-        error_array = np.sqrt(y_error_array**2 +
-                              (test_params[0] * x_error_array)**2)
+        self.error_array = np.sqrt(self.y_error_array**2 +
+                              (test_params[0] * self.x_error_array)**2)
+        error_array = self.error_array[self.point_ignore==0]
         
         params, pcov = scipy.optimize.curve_fit(self.model, x_array, y_array,
                                       sigma=error_array, p0=initial_params, absolute_sigma=True)
@@ -136,10 +138,9 @@ class dataset:
         
         m, q = self.fit_uarray()
         
-        
         x_array = self.x_array[self.point_ignore==0]
         y_array = self.y_array[self.point_ignore==0]
-        y_error_array = self.y_error_array[self.point_ignore==0]
+        y_error_array = self.error_array[self.point_ignore==0]
 
         #Create gradual x values for plotting
         n_steps = 1000
@@ -154,10 +155,12 @@ class dataset:
         x_excess = n_steps * percent_plot_excess * x_step
         x_range = np.arange(x_min-x_excess, x_max+x_excess, x_step)
         
+        #Generate arrays for ignored data points
         x_extra_array = self.x_array[self.point_ignore==1]
         y_extra_array = self.y_array[self.point_ignore==1]
-        y_extra_error_array = self.y_error_array[self.point_ignore==1] + self.x_error_array[self.point_ignore==1] * np.abs(m.n)
+        y_extra_error_array = self.error_array[self.point_ignore==1]
         
+        #Generate y values for model plot
         params, error_params = self.fit()
         y_range = self.model(x_range, params[0], params[1])
         
@@ -180,11 +183,11 @@ class dataset:
         m, q = self.fit_uarray()
         
         x_array = self.x_array[self.point_ignore==0]
-        y_error_array = self.y_error_array[self.point_ignore==0]
+        y_error_array = self.error_array[self.point_ignore==0]
         residuals = all_residuals[self.point_ignore==0]
         
         x_extra_array = self.x_array[self.point_ignore==1]
-        y_extra_error_array = self.y_error_array[self.point_ignore==1]
+        y_extra_error_array = self.error_array[self.point_ignore==1]
         extra_residuals = all_residuals[self.point_ignore==1]
         
         if(plot_ignored==True):
