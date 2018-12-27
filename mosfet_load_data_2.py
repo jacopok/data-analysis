@@ -17,6 +17,10 @@ V_DS_21 = multimeter_error_array(V_DS_arr_21, V_DS_scale_arr_21, 'a', 'v')
 
 V_DS_th_21 = V_DD_21 - V_GS_21 #??? forse sbagliato
 
+M_21 = np.stack((V_GS_21, V_GS_scale_arr_21, V_DS_21, V_DS_scale_arr_21)).T
+
+print_matrix(M_21)
+
 # 2.2 
 
 V_gs_22 = ufloat_single_value(1.782, 6, 'a', 'v')

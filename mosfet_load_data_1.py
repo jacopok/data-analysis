@@ -1,11 +1,29 @@
 from fits_multimeter_errors import *
 from mosfet_load_data_basics import *
 
+def print_sat(arr):
+    sat = []
+    for x in arr:
+        if(x == 0):
+            sat.append("")
+        elif(x == 1):
+            sat.append("Saturazione")
+        else:
+            return(None)
+    return(sat)
+
 #1.1
 
 I_d_qpt_11 = ufloat_single_value(801.61 * 10**(-6) , 10**(-3), 'm', 'a')
 V_gs_qpt_11 = ufloat_single_value(2.373, 6, 'a', 'v')
 V_ds_qpt_11 = ufloat_single_value(7, 60, 'a', 'v')
+
+
+Names_11 = ["I_d" , "V_{gs}", "V_{ds}"]
+Vars_11 = np.array([I_d_qpt_11, V_gs_qpt_11, V_ds_qpt_11])
+Units_11 = ["A", "V", "V"]
+
+#print_ufloat_array(Names_11, Vars_11, Units_11)
 
 #1.2
 
@@ -27,6 +45,19 @@ m_12, q_12 = characteristic_12.fit_uarray()
 
 r_0_12 = 1 / m_12
 lambda_n_12 = m_12 / q_12
+
+M_12 = np.stack((characteristic_12.data_uarray("x"), V_ds_scale_arr_12,
+                 characteristic_12.data_uarray("y"), I_d_arr_12,
+                 print_sat(characteristic_12.point_ignore))).T
+                 
+column_names_12 = "$V_{DS}$ & fondoscala & $I_D$ & fondoscala & Triodo"
+#print_matrix(M_12, column_names_12)
+
+Names_12 = ["m", "q", "r_0", "\lambda_n"]
+Vars_12 = np.array([m_12, q_12, r_0_12, lambda_n_12])
+Units_12 = ["S", "A", "\Omega", "V^{-1}"]
+
+#print_ufloat_array(Names_12, Vars_12, Units_12)
 
 #1.3
 
@@ -51,3 +82,17 @@ k_n_13 = 2 * m_13 * m_13
 V_TN_13 = - q_13 / m_13
 
 g_m_qpt_13 = 2 * I_d_qpt_11 / (V_gs_qpt_11 - V_TN_13)
+
+Names_13 = ["m", "q", "k_n", "V_{TN}", "g_m^{qpt}"]
+Vars_13 = np.array([m_13, q_13, k_n_13, V_TN_13, g_m_qpt_13])
+Units_13 = ["A^{1/2}V^{-1}", "A^{1/2}", "AV^{-2}", "V", "S"]
+
+print()
+#print_ufloat_array(Names_13, Vars_13, Units_13)
+
+M_13 = np.stack((characteristic_gs_13.data_uarray("x"), V_gs_scale_arr,
+                 I_d_13, I_d_scale_arr_13, Y_13)).T
+
+column_names_13 = "$V_{gs}$ & fondoscala & $I_d$ & fondoscala & Y"                 
+
+#print_matrix(M_13, column_names_13)

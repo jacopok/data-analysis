@@ -36,7 +36,7 @@ f_33 = ufloat(10000, 0)
 Vin_33 = ufloat_single_value(.204, 0.05, 'o', 'v')
 Vout_33 = ufloat_single_value(1.65, .2, 'o', 'v')
 
-A_sper_33 = - Vout_33 / Vin_33
+A_sper_33 = Vout_33 / Vin_33
 
 # 3.4
 
@@ -49,9 +49,10 @@ V_out_34 = ufloat_single_value(1.27, .2, 'o', 'v')
 V_out_load_34 = ufloat_single_value(.728, .05, 'o', 'v')
 
 A_teor_34 = g_m_32 * res_parallel(R[5], r_0_12)
+#da comparare con A_sper_33!
 
-R_in_34 = R[6] * V_out_34 / (V_in_34 * A_teor_34 - V_out_34 )
-R_out_load_34 = R[7] * ((V_in_34 * A_teor_34 / V_out_load_34 ) - 1 )
+R_in_34 = R[6] * V_out_34 / (V_in_34 * A_sper_33 - V_out_34 )
+R_out_load_34 = R[7] * ((V_in_34 * A_sper_33 / V_out_load_34 ) - 1 )
 
 # 3.5
 

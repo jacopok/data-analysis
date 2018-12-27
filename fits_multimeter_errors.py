@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from uncertainties import *
 from uncertainties.umath import *
 from uncertainties import unumpy
+import math
 
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
@@ -61,15 +62,22 @@ class dataset:
         """
         fits the model
         
-        returns params, error_params
+        returns params (if y=mx+q: first m, then q), error_params
         """
         x_array = self.x_array[self.point_ignore==0]
         y_array = self.y_array[self.point_ignore==0] 
         y_error_array = self.y_error_array[self.point_ignore==0]
+        x_error_array = self.x_error_array[self.point_ignore==0]
         
+        test_params, test_pcov = scipy.optimize.curve_fit(self.model, x_array, y_array,
+                                      sigma=y_error_array, p0=initial_params, absolute_sigma=True)
+        
+        error_array = np.sqrt(y_error_array**2 +
+                              (test_params[0] * x_error_array)**2)
         
         params, pcov = scipy.optimize.curve_fit(self.model, x_array, y_array,
-                                      sigma=y_error_array, p0=initial_params, absolute_sigma=True)
+                                      sigma=error_array, p0=initial_params, absolute_sigma=True)
+        
         
         error_params = []
         for i in range(np.shape(pcov)[0]):
@@ -191,6 +199,31 @@ class dataset:
         plt.tight_layout()
         plt.savefig('figures/' + figname, dpi = 600)
         plt.close()
+    
+    def data_uarray(self, axis):
+        """
+        Returns array of ufloats of the x or y data points.
+        The errors must have been calculated beforehand.
+        """
+        
+        if(axis=="x"):
+            values = self.x_array
+            errors = self.x_error_array
+        elif(axis=="y"):
+            values = self.y_array
+            errors = self.y_error_array
+        else:
+            print("Axis can only be x or y!")
+            return(None)
+        
+        n = len(values)
+        
+        uarr = np.zeros(n, dtype = "object")
+        
+        for index, (v, e) in enumerate(zip(values, errors)):
+            uarr[index] = ufloat(v, e)
+        
+        return(uarr)
     
 def multimeter_error(value, scale, multimeter_type, measure_type, ignore_gain = False, ignore_digit = False):
     """
@@ -343,12 +376,99 @@ def res_parallel(r1, r2):
     return(r1 * r2 / (r1 + r2))
     
 def print_ufloat(x, units = '', error_decimals = 1):
-    order_error = int(log10(x.s)) - error_decimals
-    order_value = int(log10(x.n)) 
-    digit_error = round(x.s, -order_error) * 10**(-order_error)
-    value = round(x.n, -order_error) * 10**(-order_value)
-    string = '\\' + 'SI{%s(%s)e%s}{' % (value, int(digit_error), order_value)
-    string += units
-    string += '}'
-    print(string)
+    """
+    Prints the first input, which must be a ufloat,
+    in a format compatible with the LaTeX package siunitx.
+    Output is \SI{x}{units}, with x rounded to the right number of decimal places.
+    error_decimals can be set to be larger than 1 if needed
+    
+    """
+    
+    if(x<0):
+        neg = "-"
+        x = -x
+    else:
+        neg = ""
+
+    order_error = math.floor(log10(x.s * 1.001)) - error_decimals + 1
+    #Horrible hack, but it was the easiest way to make sure that errors like 10**n
+    #with n integer were rounded correctly
+    if(x.n > 10**error_decimals * x.s):
+        order_value = math.floor(log10(x.n))
+    else:
+        order_value = order_error
+    precision = -order_error+order_value
+    error = round(x.s * 10**(-order_value), precision)
+    value = round(x.n * 10**(-order_value), precision)
+    string = '$\\' + 'SI{' + neg + '%s +- %s e%s}{' % (value, error, order_value)
+    #string = '\\' + 'SI[round-precision = %s]{%s +- %s}{' % (order_error, x.n, x.s)
+    if(units is not None):
+        string += units
+    string += '}$'
+    print(string, end='')
     return()
+
+def print_float(x, units = ''):
+    """
+    Prints the first input, which must be a float,
+    in a format compatible with the LaTeX package siunitx.
+    Output is \SI{x}{units}, with x not rounded at all.
+    
+    """
+    
+    if(x<0):
+        neg = "-"
+        x = -x
+    else:
+        neg = ""
+    
+    if(np.abs(x) > (1e-20)):
+        order_value = math.floor(log10(x))
+    else:
+        print('\\' + 'SI{0}{}', end = '')
+        return(None)
+
+    value = x * 10**(-order_value)
+    string = '$\\' + 'SI{' + neg + '%s e%s}{' % (value, order_value)
+    if(units is not None):
+        string += units
+    string += '}$'
+    print(string, end='')
+    return()
+
+def print_matrix(M, column_names="", uniform_units = None):
+    row_number = np.shape(M)[1]
+    c_string = "c"
+    for i in range(row_number - 1):
+        c_string += "|c"
+    print("\\" + "begin{tabular}{" + c_string + "}")
+    print(column_names + " \\\\")
+    print("\\" + "hline")
+    for row in M:
+        for index, item in enumerate(row):
+            if(index!=0):
+                print(' & ', end='')
+            if(str(type(item)) == "<class 'uncertainties.core.Variable'>"
+               or str(type(item)) == "<class 'uncertainties.core.AffineScalarFunc'>"):
+                print_ufloat(item, units = uniform_units)
+            elif(str(type(item)) == "<class 'float'>" or 
+                 str(type(item)) == "<class 'int'>"):
+                print_float(item, units = uniform_units)
+            else:
+                print(item, end='')
+        print(' \\\\')
+    print("\\" + "hline")
+    print("\\" + "end{tabular}")
+
+        
+def print_ufloat_array(names, variables, units):
+    if(len(units) > 1):
+        for name, var, unit in zip(names, variables, units):
+            print("$" + name + "$ =", end = '')
+            print_ufloat(var, units=unit)
+            print()
+    else:
+        for name, var in zip(names, variables):
+            print("$" + name + "$ =", end = '')
+            print_ufloat(var, units=units)
+            print()
