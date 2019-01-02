@@ -33,7 +33,7 @@ V_out_22 = ufloat_single_value(1.31, .2, 'o', 'v')
 
 V_ds_sat_22 = V_gs_22 - V_TN_13
 
-A_vt_exp_22 = V_out_22 / V_in_22
+A_vt_exp_22 = - V_out_22 / V_in_22
 
 I_D_exp_22 = (V_DD_21 - V_ds_22) / R[1]
 
@@ -42,6 +42,10 @@ g_m_22 = sqrt(2 * I_D_exp_22 * k_n_13)
 A_vt_teor_22 = - g_m_22 * res_parallel(r_0_12, R[1])
 
 I_d_22 = ufloat_single_value(.00022287, .001, 'm', 'a')
+
+g_m_amp_22 = sqrt(2 * I_d_22 * k_n_13)
+
+A_vt_teor_amp_22 = - g_m_amp_22 * res_parallel(r_0_12, R[1])
 
 Names_22 = ["V_{gs}", "V_{ds}", "V_{in}", "V_{out}",
             "V_{ds}^{sat}", "A_{sper}",

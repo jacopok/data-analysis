@@ -109,7 +109,8 @@ class dataset:
         
     def goodness_of_fit(self):
         """
-        Returns: p value, chi squared value, z-score of p value
+        Returns: p value, chi squared value,
+        chi squared over degrees of freedom, z-score of p value
         
         """
         
@@ -124,7 +125,7 @@ class dataset:
         pvalue = chi2.sf(x=sum_square_deviation)
         sigma = chi2.std()
         mean = chi2.mean()
-        return(pvalue, sum_square_deviation, (sum_square_deviation-mean)/sigma)
+        return(pvalue, sum_square_deviation, sum_square_deviation/df, (sum_square_deviation-mean)/sigma)
         
         
     def full_plot(self, xlabel='', ylabel='', figname='', plot_ignored=True):
@@ -359,10 +360,13 @@ def ufloat_single_value(value, scale, multimeter_type, measure_type, ignore_gain
     return(ufloat(value,
                   float(multimeter_error(value, scale, multimeter_type, measure_type, ignore_gain))))
     
-def ufloat_compatibility(x, y):
+def ufloat_compatibility(x, y, printout=False):
     diff = np.abs(x.n - y.n)
     error = (x - y).s
-    return(diff/error)
+    lam = diff/error
+    if(printout==True):
+        print("$" + "\\" + "lambda=%.1f" % lam + "$")
+    return(lam)
     
 def uarray_compatibility(x, y):
     if(len(x) != len(y)):
@@ -411,7 +415,7 @@ def print_ufloat(x, units = '', error_decimals = 1):
     print(string, end='')
     return()
 
-def print_float(x, units = ''):
+def print_float(x, units = '', low_precision = False):
     """
     Prints the first input, which must be a float,
     in a format compatible with the LaTeX package siunitx.
@@ -432,14 +436,19 @@ def print_float(x, units = ''):
         return(None)
 
     value = x * 10**(-order_value)
-    string = '$\\' + 'SI{' + neg + '%s e%s}{' % (value, order_value)
+
+    string = '$\\' + 'SI{' + neg
+    if(low_precision==False):
+        string += '%s e%s}{' % (value, order_value)
+    else:
+        string += '%.1f e %s}{' % (value, order_value)
     if(units is not None):
         string += units
     string += '}$'
     print(string, end='')
     return()
 
-def print_matrix(M, column_names="", uniform_units = None):
+def print_matrix(M, column_names="", uniform_units = None, low_precision = False):
     row_number = np.shape(M)[1]
     c_string = "c"
     for i in range(row_number - 1):
@@ -455,8 +464,9 @@ def print_matrix(M, column_names="", uniform_units = None):
                or str(type(item)) == "<class 'uncertainties.core.AffineScalarFunc'>"):
                 print_ufloat(item, units = uniform_units)
             elif(str(type(item)) == "<class 'float'>" or 
-                 str(type(item)) == "<class 'int'>"):
-                print_float(item, units = uniform_units)
+                 str(type(item)) == "<class 'int'>" or
+                 str(type(item)) == "<class 'numpy.float64'>"):
+                print_float(item, units = uniform_units, low_precision=low_precision)
             else:
                 print(item, end='')
         print(' \\\\')

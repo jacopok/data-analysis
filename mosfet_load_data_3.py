@@ -119,3 +119,6 @@ Vars_36 = np.array([V_in_36, V_out_36, V_in_noload_36, V_out_noload_36,
 Units_36 = ["V", "V", "V", "V", "", "", "", "", "\Omega", "\Omega"]
 
 #print_ufloat_array(Names_36, Vars_36, Units_36)
+
+#ufloat_compatibility(A_exp_36, A_teor_36, True)
+#ufloat_compatibility(A_exp_noload_36, A_teor_noload_36, True)
