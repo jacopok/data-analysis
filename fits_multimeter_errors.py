@@ -9,6 +9,7 @@ from uncertainties import unumpy
 import math
 
 plt.rc('text', usetex=True)
+plt.rc('text.latex', preamble=r'\usepackage{amsmath} \usepackage{amssymb}')
 plt.rc('font', family='serif')
 
 
@@ -59,7 +60,7 @@ class dataset:
         y = x * a + b
         return(y)
         
-    def fit (self, initial_params=None):
+    def fit (self, initial_params=None, correct_for_bad_fit=False):
         """
         fits the model
         
@@ -83,8 +84,15 @@ class dataset:
         
         error_params = []
         for i in range(np.shape(pcov)[0]):
-            error_params.append(pcov[i,i])
-        
+            error_params.append(np.sqrt(pcov[i,i]))
+        error_params = np.array(error_params)
+
+            
+        if(correct_for_bad_fit == True):
+            gof = self.goodness_of_fit()
+            chi2_over_dof = gof[1] / gof[2]
+            error_params = np.array(error_params)
+            error_params *= np.sqrt(chi2_over_dof)
         return(params, error_params)
         
     def fit_uarray (self, initial_params=None):
@@ -110,14 +118,14 @@ class dataset:
     def goodness_of_fit(self):
         """
         Returns: p value, chi squared value,
-        chi squared over degrees of freedom, z-score of p value
+        degrees of freedom, z-score of p value
         
         """
         
         self.calculate_y_prediction()
         y_array = self.y_array[self.point_ignore==0]
         y_prediction = self.y_prediction[self.point_ignore==0]
-        y_error_array = self.y_error_array[self.point_ignore==0]
+        y_error_array = self.error_array[self.point_ignore==0]
         df = len(y_array) - 2
         chi2 = sps.chi2(df=df)
         square_deviation = ((y_array - y_prediction) / y_error_array)**2
@@ -125,7 +133,8 @@ class dataset:
         pvalue = chi2.sf(x=sum_square_deviation)
         sigma = chi2.std()
         mean = chi2.mean()
-        return(pvalue, sum_square_deviation, sum_square_deviation/df, (sum_square_deviation-mean)/sigma)
+        
+        return(pvalue, sum_square_deviation, df, (sum_square_deviation-mean)/sigma)
         
         
     def full_plot(self, xlabel='', ylabel='', figname='', plot_ignored=True):
@@ -360,10 +369,20 @@ def ufloat_single_value(value, scale, multimeter_type, measure_type, ignore_gain
     return(ufloat(value,
                   float(multimeter_error(value, scale, multimeter_type, measure_type, ignore_gain))))
     
-def ufloat_compatibility(x, y, printout=False):
+def ufloat_compatibility(xt, yt, printout=False):
+    test = (xt, yt)
+    arr = []
+    for var in test:
+        if((str(type(var)) != "<class 'uncertainties.core.Variable'>")
+               and (str(type(var)) != "<class 'uncertainties.core.AffineScalarFunc'>")):
+            arr.append(ufloat(var, 0))
+        else:
+            arr.append(var)
+    x = arr[0]
+    y = arr[1]
     diff = np.abs(x.n - y.n)
     error = (x - y).s
-    lam = diff/error
+    lam = np.round(diff/error, decimals=1)
     if(printout==True):
         print("$" + "\\" + "lambda=%.1f" % lam + "$")
     return(lam)

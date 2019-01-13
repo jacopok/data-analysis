@@ -1,5 +1,6 @@
 from fits_multimeter_errors import *
 from mosfet_load_data_1 import *
+import itertools
 
 # 2.1
 
@@ -13,15 +14,28 @@ V_GS_21 = multimeter_error_array(V_GS_arr_21, V_GS_scale_arr_21, 'a', 'v')
 V_DS_arr_21 = [4.996, .1066]
 V_DS_scale_arr_21 = [6, .6]
 
+V_DS_SPICE_21 = [5, 0.145]
+
 V_DS_21 = multimeter_error_array(V_DS_arr_21, V_DS_scale_arr_21, 'a', 'v')
 
 V_DS_th_21 = V_DD_21 - V_GS_21 #??? forse sbagliato
 
-M_21 = np.stack((V_GS_21, V_GS_scale_arr_21, V_DS_21, V_DS_scale_arr_21)).T
 
-col_names_21 = "$V_{GS}$ & v/div & $V_{DS}$ & v/div"
+
+M_21 = np.stack((V_GS_21, V_GS_scale_arr_21, V_DS_21,
+                 V_DS_scale_arr_21, V_DS_SPICE_21)).T
+
+col_names_21 = "$V_{GS}$ & v/div & $V_{DS}$ & v/div & $V_{DS}^{SPICE}$"
 
 #print_matrix(M_21, col_names_21)
+
+lambda_array_21 = []
+
+for pair in itertools.combinations((V_DS_21, V_DS_SPICE_21, V_DS_th_21), r=2):
+    #lambda_array_21.append(uarray_compatibility(*pair))
+
+M_lambda_21 = np.stack(lambda_array_21).T
+#print_matrix(M_lambda_21)
 
 # 2.2 
 
@@ -60,4 +74,4 @@ Vars_22 = np.array([V_gs_22, V_ds_22, V_in_22, V_out_22, V_ds_sat_22, A_vt_exp_2
                     I_D_exp_22, g_m_22, A_vt_teor_22, I_d_22])
 Units_22 = ["V", "V", "V", "V", "V", "", "A", "S", "", "A"]
 
-print_ufloat_array(Names_22, Vars_22, Units_22)
+#print_ufloat_array(Names_22, Vars_22, Units_22)
