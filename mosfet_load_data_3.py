@@ -5,7 +5,7 @@ A_ass_CS = ufloat(-8, 0.8)
 
 #3.1
 
-R_VM = ufloat(10000000, 0)
+R_VM = ufloat(10000000,0)
 
 # R_2 calcolata: ((15- (V_gs_qpt_11 + R[3] * I_d_qpt_11))/ (V_gs_qpt_11 + R[3] * I_d_qpt_11)) * R[2]
 
@@ -66,8 +66,8 @@ V_out_load_34 = ufloat_single_value(.728, .05, 'o', 'v')
 A_teor_34 = g_m_32 * res_parallel(R[5], r_0_12)
 #da comparare con A_sper_33!
 
-R_in_34 = R[6] * V_out_34 / (V_in_34 * A_sper_33 - V_out_34 )
-R_out_load_34 = R[7] * ((V_in_34 * A_sper_33 / V_out_load_34 ) - 1 )
+R_in_34 = R[6] * V_out_34 / (V_in_34 * A_teor_34 - V_out_34 )
+R_out_load_34 = R[7] * ((V_in_34 * A_teor_34/ V_out_load_34 ) - 1 )
 
 Names_34 = ["R_{in}^{cs}", "R_{out}^{cs}", "V_{in}", "V_{out}", "V_{out}^{load}",
             "A_{teor}", "R_{in}", "R_{out}^{load}"]
@@ -108,6 +108,7 @@ A_teor_noload_36 = g_m_32 * res_parallel(R[3], r_0_12) / (1 + g_m_32 * res_paral
 A_teor_36 = g_m_32 * res_parallel(R[3], res_parallel(r_0_12, R[7])) / (1 + g_m_32 * res_parallel(R[3], res_parallel(r_0_12, R[7])))
 
 R_out_36 = res_parallel(1/g_m_32, res_parallel(R[3], r_0_12))
+#R_out_36 = res_parallel(res_parallel(1/g_m_32, R[3]), r_0_12)
 R_out_cd_36 = R[7] * (A_teor_noload_36 * V_in_36 / V_out_36 - 1)
 
 Names_36 = ["V_{in}", "V_{out}", "V_{in}^{noload}", "V_{out}^{noload}",
@@ -118,7 +119,7 @@ Vars_36 = np.array([V_in_36, V_out_36, V_in_noload_36, V_out_noload_36,
                     R_out_36, R_out_cd_36])
 Units_36 = ["V", "V", "V", "V", "", "", "", "", "\Omega", "\Omega"]
 
-#print_ufloat_array(Names_36, Vars_36, Units_36)
+print_ufloat_array(Names_36, Vars_36, Units_36)
 
-#ufloat_compatibility(A_exp_36, A_teor_36, True)
-#ufloat_compatibility(A_exp_noload_36, A_teor_noload_36, True)
+ufloat_compatibility(A_exp_36, A_teor_36, True)
+ufloat_compatibility(A_exp_noload_36, A_teor_noload_36, True)

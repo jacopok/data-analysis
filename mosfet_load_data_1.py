@@ -59,12 +59,13 @@ I_d_ratios_12 = 100 * np.array([x.n for x in I_d_ratios_uarray_12])
 #percent differences between simulation and measured values
 
 M_12 = np.stack((characteristic_12.data_uarray("x"), V_ds_scale_arr_12,
-                 characteristic_12.data_uarray("y"), I_d_arr_12,
+                 characteristic_12.data_uarray("y"), I_d_scale_arr_12,
                  print_sat(characteristic_12.point_ignore))).T
                  
 M_Id_12 = np.stack((I_d_uarray_12, I_d_arr_spice_12, I_d_ratios_12)).T
                  
 column_names_12 = "$V_{DS}$ & fondoscala & $I_D$ & fondoscala & Triodo"
+
 #print_matrix(M_12, column_names_12)
 
 Names_12 = ["m", "q", "r_0", "\lambda_n"]
@@ -85,7 +86,7 @@ I_d_13 = multimeter_error_array(I_d_arr_13, I_d_scale_arr_13, 'm', 'a')
 
 Y_13 = unumpy.sqrt(I_d_13 / (1 + lambda_n_12 * V_ds_qpt_11))
 
-characteristic_gs_13 = dataset(V_gs_arr, unumpy.nominal_values(Y_13), 'a', 'v')
+characteristic_gs_13 = dataset(V_gs_arr, unumpy.nominal_values(Y_13), 'v', 'av')
 
 characteristic_gs_13.y_error_array = unumpy.std_devs(Y_13)
 characteristic_gs_13.calculate_error(V_gs_scale_arr, 'x', 'a')

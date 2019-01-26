@@ -32,9 +32,10 @@ col_names_21 = "$V_{GS}$ & v/div & $V_{DS}$ & v/div & $V_{DS}^{SPICE}$"
 lambda_array_21 = []
 
 for pair in itertools.combinations((V_DS_21, V_DS_SPICE_21, V_DS_th_21), r=2):
-    #lambda_array_21.append(uarray_compatibility(*pair))
+    lambda_array_21.append(uarray_compatibility(*pair))
 
 M_lambda_21 = np.stack(lambda_array_21).T
+
 #print_matrix(M_lambda_21)
 
 # 2.2 
@@ -53,8 +54,8 @@ A_vt_exp_22 = - V_out_22 / V_in_22
 
 I_D_exp_22 = (V_DD_21 - V_ds_22) / R[1]
 
-#g_m_22 = sqrt(2 * I_D_exp_22 * k_n_13)
-g_m_22 = 2 * I_D_exp_22 / (V_gs_22 - V_TN_13)
+g_m_22 = sqrt(2 * I_D_exp_22 * k_n_13)
+#g_m_22 = 2 * I_D_exp_22 / (V_gs_22 - V_TN_13)
 
 r_0_22 = (1 / lambda_n_12 + V_ds_22) / I_D_exp_22
 

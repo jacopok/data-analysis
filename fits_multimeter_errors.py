@@ -43,16 +43,16 @@ class dataset:
         else:
             n = len(scale_array)
         
-        error_array = np.zeros((n))
+        test_error_array = np.zeros(n)
         
         for i in range(n):
-            error_array[i] = multimeter_error(array[i],
+            test_error_array[i] = multimeter_error(array[i],
                        scale_array[i], multimeter_type, data_type)
             
         if (axis=='x'):
-            self.x_error_array = error_array
+            self.x_error_array = test_error_array
         elif (axis=='y'):
-            self.y_error_array = error_array
+            self.y_error_array = test_error_array
         
         return(0)
         
@@ -238,7 +238,8 @@ class dataset:
         
         return(uarr)
     
-def multimeter_error(value, scale, multimeter_type, measure_type, ignore_gain = False, ignore_digit = False):
+def multimeter_error(value, scale, multimeter_type, measure_type,
+                     ignore_gain = False, ignore_digit = False):
     """
     value is the value measured by the multimeter
     scale is the "end of scale" given by the multimeter, 
