@@ -1,11 +1,11 @@
 from fits_multimeter_errors import *
 from mosfet_load_data_4 import *
 
-characteristic_12.full_plot('$V_{ds}$', '$I_d$', 'p12completo')
-characteristic_12.residuals_plot('Vds-Vteor', '$I_d$', 'p12residui')
+characteristic_12.full_plot('$V_{ds}$ [V]', '$I_d$ [A]', 'p12completo')
+characteristic_12.residuals_plot('$V_{ds}$ [V]', '$I_d - I_d^{fit}$ [A]', 'p12residui')
 
-characteristic_gs_13.full_plot('$V_{gs}$', '$Y$', 'p13completo')
-characteristic_gs_13.residuals_plot('$V_{gs}$', '$Y-Y_{model}$', 'p13residui')
+characteristic_gs_13.full_plot('$V_{gs}$ [V]', '$Y$ [A$^{1/2}$]', 'p13completo')
+characteristic_gs_13.residuals_plot('$V_{gs}$ [V]', '$Y-Y_{fit}$ [A$^{1/2}$]', 'p13residui')
 
 maximum_ignored_12 = 6
 values = np.empty((5, maximum_ignored_12))
@@ -79,7 +79,7 @@ for Vds in Vds_array:
     plt.plot(Vgs, I, label = ("$V_{DS} \\approx $ " + '{0:.{1}f}'.format(Vds, 1) + " V"))
 plt.errorbar(x=characteristic_gs_13.x_array, y=unumpy.nominal_values(I_d_13),
             yerr=unumpy.std_devs(I_d_13), fmt = 'bo', marker = 'x',
-            label = "Experimental data")
+            label = "Dati sperimentali")
 
 Imax = Id_v(Vds_array[-1], Vgs[-1], V_TN_13.n, k_n_13.n, lambda_n_12.n)
 

@@ -18,16 +18,17 @@ V_DS_SPICE_21 = [5, 0.145]
 
 V_DS_21 = multimeter_error_array(V_DS_arr_21, V_DS_scale_arr_21, 'a', 'v')
 
-V_DS_th_21 = V_DD_21 - V_GS_21 #??? forse sbagliato
+V_DS_th_21 = V_DD_21 - V_GS_21 #inizializzazione di base, poi sistemata
+R_on_21 = 1/k_n_13 /(V_GS_21[1] - V_TN_13)
 
-
+V_DS_th_21[1] = V_DD_21 * R_on_21 / (R_on_21 + R[1])
 
 M_21 = np.stack((V_GS_21, V_GS_scale_arr_21, V_DS_21,
                  V_DS_scale_arr_21, V_DS_SPICE_21)).T
 
 col_names_21 = "$V_{GS}$ & v/div & $V_{DS}$ & v/div & $V_{DS}^{SPICE}$"
 
-#print_matrix(M_21, col_names_21)
+#print_matrix(M_21, col_names_21, uniform_units="V")
 
 lambda_array_21 = []
 
